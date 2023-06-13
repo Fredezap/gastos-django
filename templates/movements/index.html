@@ -1,0 +1,103 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Movimientos {% endblock %}
+
+{% block 'content' %}
+
+{% if month %}
+<div class="header-container">
+    <h1 class="inline-header">MOVIMIENTOS MES</h1>
+    {% include 'movements/partials/months_header.html'%}
+</div>
+{% else %}
+<h1>TODOS LOS MOVIMIENTOS</h1>
+{% endif %}
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+        {% if message.tags %}
+            {% if message.tags == 'success' %}
+                <li class="alert-success">{{ message|safe }}</li>
+            {% elif message.tags == 'error' %}
+                <li class="alert-error">{{ message|safe }}</li>
+            {% else %}
+                <li>{{ message|safe }}</li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</ul>
+{% endif %}
+
+<input class="search-bar" id="myInput" type="text" placeholder="Buscar..">
+{% if is_get == True %}
+<span class="aux-btns">
+<form style="margin-top:5px" method="GET" action="{% url 'movementsIndex' %}">
+    {% csrf_token %}
+    <input type="hidden" name="year" value={{year}}>
+    <input type="hidden" name="month" value={{month}}>
+    <input class="btn btn-light" type="submit" value="VER TODOS">
+</form>
+    <a class="btn btn-danger" href="{% url 'movementsCreate' %}">AGREGAR PAGO</a>
+    <a class="btn btn-success" href="{% url 'fundsIndex' %}">SALDO ACTUAL ${{current_funds}}</a>
+    <a class="btn btn-info" href="{% url 'movementsMonthly' %}">VER POR MES</a>
+</span>
+{% else %}
+<span class="aux-btns">
+    <form style="margin-top:5px" method="POST" action="{% url 'movementsIndex' %}">
+        {% csrf_token %}
+        <input type="hidden" name="year" value={{year}}>
+        <input type="hidden" name="month" value={{month}}>
+        <input class="btn btn-light" type="submit" value="VER TODOS">
+    </form>
+    <form style="margin-top:5px" method="POST" action="{% url 'movementsMonthly' %}">
+        {% csrf_token %}
+        <input type="hidden" name="year" value={{year}}>
+        <input type="hidden" name="month" value={{month}}>
+        <input class="btn btn-success" type="submit" value="DETALLES MES">
+    </form>
+        <a class="btn btn-danger" href="{% url 'movementsCreate' %}">AGREGAR PAGO</a>
+        <a class="btn btn-success" href="{% url 'fundsIndex' %}">SALDO ACTUAL ${{current_funds}}</a>
+        <a class="btn btn-info" href="{% url 'movementsMonthly' %}">VER POR MES</a>
+    </span>
+{% endif %}
+
+<table class="table table-light" id="custom-table" style="align-items: center; text-align: center">
+    <thead class="table-dark" id="custom-table-head">
+        <tr>
+            <th scope="col">Categoria</th>
+            <th scope="col">Monto</th>
+            <th scope="col">Ahorro</th>
+            <th scope="col">Total</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Detalle</th>
+        </tr>
+    </thead>
+{% for movement in movements %}
+    <tbody id="tbodyFinder">
+        <tr>
+            {% if movement.amount == 0 %}
+                <th scope="row">Ingreso Ahorro ({{movement.category}})</th>
+            {% elif movement.is_savings_withdraw == True %}
+                <th scope="row">Extraccion Ahorro ({{movement.category}})</th>
+            {% else %}
+                <th scope="row">{{movement.category}}</th>
+            {% endif %}
+                <th scope="row">{{movement.amount}}</th>
+                <th scope="row">{{movement.savings}}</th>
+            {% if movement.category.is_payment == True and movement.is_savings_withdraw != True %}
+                <th scope="row" style="color: red;">- {{movement.total_amount}}</th>
+            {% else %}
+                <th scope="row" style="color: green;">+ {{movement.total_amount}}</th>
+            {% endif %}
+                <th scope="row">{{movement.date|date:"d-m-Y"}}</th>
+                <th scope="row"><button data-id="{{movement}}" id="{{movement.id}}" type="button" class="btn btnmoreinfo btn-info"  data-bs-toggle="modal" data-bs-target="#ModalMoreInfo">
+                    <i class="fa fa-info-circle" style="font-size:24px"></i></button></th>
+        </tr>
+    </tbody>
+{% endfor %}
+</table>
+
+{% include 'movements/partials/modalInfo.html' %}
+
+{% endblock %}

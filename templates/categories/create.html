@@ -1,0 +1,22 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Ingresar categoria {% endblock %}
+
+{% block 'styles' %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block 'content' %}
+    <form action="{% url 'categoriesCreate' %}" method="POST">
+        <h1 class=formTitle>NUEVA CATEGORIA</h1>
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <div class="btn-wrapper">
+            <button class="btn-cancel"><a href="{% url 'categoriesIndex' %}">Cancelar</a></button>
+            <input class='btn-send' type="submit" value="Crear categoria" name="NewPaymentForm">
+        </div>
+    </form>
+{% endblock %}

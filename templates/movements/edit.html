@@ -1,0 +1,24 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Editar contacto {% endblock %}
+
+{% block 'styles' %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block 'content' %}
+    <span class="aux-btns-form"><a href="{% url 'contactIndex' %}">Volver atras</a></span>
+    <form action="{% url 'contactEdit' id=id %}" method="POST">
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <div class="btn-wrapper">
+            <input class='btn-send' type="submit" value="editar" name="editForm">
+        </div>
+        <div class="btn-wrapper">
+            <p>El contacto fue creado el {{date_created}}</p>
+        </div>
+    </form>
+{% endblock %}

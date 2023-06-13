@@ -1,0 +1,16 @@
+{% extends 'layout/base.html' %}
+{% block 'title' %} Inicio {% endblock %}
+{% block 'content' %}
+<h1>BIENVENIDO A TU GESTOR DE GASTOS Y AHORROS</h1>
+<div class="cards">
+    <div class="card">
+        <a href="{% url 'fundsIndex' %}">SALDO ACTUAL</a>
+    </div>
+    <div class="card">
+        <a href="{% url 'categoriesIndex' %}">CATEGORIAS AHORROS</a>
+    </div>
+    <div class="card">
+        <a href="{% url 'movementsIndex' %}">MOVIMIENTOS</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Por mes {% endblock %}
+
+{% block 'content' %}
+
+<h1>MESES</h1>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+        {% if message.tags %}
+            {% if message.tags == 'success' %}
+                <li class="alert-success">{{ message|safe }}</li>
+            {% elif message.tags == 'error' %}
+                <li class="alert-error">{{ message|safe }}</li>
+            {% else %}
+                <li>{{ message|safe }}</li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</ul>
+{% endif %}
+
+<table class="table table-light" id="custom-table" style="align-items: center; text-align: center">
+    <thead class="table-dark" id="custom-table-head">
+        <tr>
+            <th scope="col">año</th>
+            <th scope="col">Mes</th>
+            <th scope="col">Detalle</th>
+        </tr>
+    </thead>
+    {% for registro in date_movements %}
+    <tbody>
+        <tr>
+            <form method="POST" action="{% url 'movementsIndex' %}">
+
+            {% csrf_token %}
+            <input type="hidden" name="year" value="{{ registro.date__year }}">
+            <input type="hidden" name="month" value="{{ registro.date__month }}">
+
+            <th scope="row">{{ registro.date__year }}</th>
+
+                {% if registro.date__month == 1 %}
+            <th scope="row">Enero</th>
+                {% elif registro.date__month == 2 %}
+            <th scope="row">Febrero</th>
+                {% elif registro.date__month == 3 %}
+            <th scope="row">Marzo</th>
+                {% elif registro.date__month == 4 %}
+            <th scope="row">Abril</th>
+                {% elif registro.date__month == 5 %}
+            <th scope="row">Mayo</th>
+                {% elif registro.date__month == 6 %}
+            <th scope="row">Junio</th>
+                {% elif registro.date__month == 7 %}
+            <th scope="row">Julio</th>
+                {% elif registro.date__month == 8 %}
+            <th scope="row">Agosto</th>
+                {% elif registro.date__month == 9 %}
+            <th scope="row">Septiembre</th>
+                {% elif registro.date__month == 10 %}
+            <th scope="row">Octubre</th>
+                {% elif registro.date__month == 11 %}
+            <th scope="row">Noviembre</th>
+                {% elif registro.date__month == 12 %}
+            <th scope="row">Diciembre</th>
+
+                {% endif %}
+
+            <th scope="row"><input class="btn btn-search" type="submit" value="Ver"></th>
+        </form>
+        </tr>
+    </tbody>
+    {% endfor %}
+</table>
+
+{% endblock %}

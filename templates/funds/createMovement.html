@@ -1,0 +1,22 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Ingresar dinero cuenta {% endblock %}
+
+{% block 'styles' %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block 'content' %}
+    <form action="{% url 'fundsMovementCreate' %}" method="POST">
+        <h1 class=formTitle>INGRESAR DINERO</h1>
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <div class="btn-wrapper">
+            <button class="btn-cancel"><a href="{% url 'fundsIndex' %}">Cancelar</a></button>
+            <input class='btn-send' type="submit" value="Ingresar dinero" name="NewPaymentForm">
+        </div>
+    </form>
+{% endblock %}

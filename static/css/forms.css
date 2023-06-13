@@ -1,0 +1,115 @@
+label {
+    padding: 5px;
+}
+
+form {
+    background-color: aliceblue;
+    margin: 50px;
+    padding: 20px;
+    border: solid black;
+    border-radius: 10px;
+}
+
+tr {
+    padding: 50px;
+}
+
+input {
+    outline: none;
+    box-shadow: none;
+    border: 1px solid var(--color-secondary);
+    padding: 5px;
+    width: 100%;
+    margin: 5px;
+}
+
+select {
+    outline: none;
+    box-shadow: none;
+    border: 1px solid var(--color-secondary);
+    padding: 5px;
+    width: 100%;
+    margin: 5px;
+}
+
+.btn-send {
+    background-color: var(--color-primary);
+    color: white;
+    width: 75%;
+    cursor: pointer;
+    margin-right: -15px;
+}
+
+.btn-cancel {
+    border: 1px solid var(--color-secondary);
+    background-color: rgb(90, 87, 87);
+    width: 20%;
+    height: 35px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.btn-cancel a {
+    text-decoration: none;
+    color: white;
+}
+
+.btn-wrapper {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-top: 10px;
+}
+
+textarea {
+    outline: none;
+    box-shadow: none;
+    border: 1px solid var(--color-secondary);
+    padding: 5px;
+    width: 100%;
+    margin: 5px;
+}
+
+
+p {
+    width: 80%;
+    margin-right: -35px;
+    margin-top: 10px;
+}
+
+
+.aux-btns-form {
+    width: 10%;
+    display: flex;
+    justify-content: center;
+    margin: 35px 0px 0px 100px;
+    background-color: var(--color-secondary);
+    border-radius: 5px;
+    padding: 5px;
+
+}
+
+.aux-btns-form a {
+    text-decoration: none;
+    color: whitesmoke;
+}
+
+.aux-btns-form a:hover {
+    color: black;
+}
+
+.formTitle {
+    text-align: center;
+    margin: 0 0 20px 0;
+    color: var(--color-primary);
+}
+
+.formSubtitle {
+    font-weight: bold;
+    text-align: center;
+    margin: 30px 0 30px 40px;
+}
+
+table{
+    width: 100%;
+}

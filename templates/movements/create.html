@@ -1,0 +1,39 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Ingresar movimiento cuenta {% endblock %}
+
+{% block 'styles' %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block 'content' %}
+    <form action="{% url 'movementsCreate' %}" method="POST">
+        <h1 class=formTitle>DETALLES PAGO</h1>
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <div class="btn-wrapper">
+            <button class="btn-cancel"><a href="{% url 'movementsIndex' %}">Cancelar</a></button>
+            <input class='btn-send' type="submit" value="Pagar" name="NewPaymentForm">
+        </div>
+    </form>
+
+    {% comment %} {% block 'scripts' %}
+    <script type="text/javascript">
+        $(".category-select").change(function () {
+            var selectedOption = $(this).find(":selected");
+            var categoryId = selectedOption.val();
+            var categoryName = selectedOption.text();
+            var categoryData = selectedOption.data();
+
+            console.log("Category ID:", categoryId);
+            console.log("Category Name:", categoryName);
+            console.log("Category Data:", categoryData);
+
+        });
+    </script>
+    {% endblock %} {% endcomment %}
+
+{% endblock %}

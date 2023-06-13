@@ -1,0 +1,57 @@
+<div class="modal fade" id="ModalMoreInfo" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+    <div class="modal-header">
+        <h3 class="modal-title" id="exampleModalLabel">DETALLES MOVIMIENTO</h3>
+    </div>
+    <div class="modal-body">
+    <div class="column">
+        <ul>
+        <li>Saldo antes</li>
+        <li>Saldo despues</li>
+        <li>Ahorros antes</li>
+        <li>Ahorros despues</li>
+        </ul>
+    </div>
+    <div class="column2">
+        <ul>
+            <li><p>$</p><p id="salary_funds_before"></p></li>
+            <li><p>$</p><p id="salary_funds_after"></p></li>
+            <li><p>$</p><p id="savings_funds_before"></p></li>
+            <li><p>$</p><p id="savings_funds_after"></p></li>
+        </ul>
+    </div>
+</div>
+<div class="bottomBody">
+    <ul>
+    <li>Metodo pago</li>
+    <li><p id="payment_method"></p></li>
+    </ul>    
+</div>
+<div class="bottomBody">
+    <ul>
+    <li>Detalle</li>
+    <li><p id="detail"></p></li>
+    </ul>    
+</div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    </div>
+    </div>
+</div>
+</div>
+
+<script>
+$(".btnmoreinfo").click(function () {
+    var id = $(this).attr('id');
+    var movementString = document.getElementById(id).getAttribute("data-id");
+    var movement = movementString.split('^')
+
+    $("#ModalMoreInfo #salary_funds_before").html(movement[4])
+    $("#ModalMoreInfo #salary_funds_after").html(movement[5])
+    $("#ModalMoreInfo #savings_funds_before").html(movement[6])
+    $("#ModalMoreInfo #savings_funds_after").html(movement[7])
+    $("#ModalMoreInfo #payment_method").html(movement[9])
+    $("#ModalMoreInfo #detail").html(movement[10])
+});
+</script>

@@ -1,0 +1,25 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Saldo {% endblock %}
+
+{% block 'content' %}
+
+<h1>SALDO ACTUAL</h1>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li {% if message.tags %} class="alert-success" {% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+    <div class="card-funds" style="backgroundcolor: green">
+        <p>${{current_funds}}</p>
+    </div>
+
+<span class="aux-btns-funds">
+    <a href="{% url 'fundsMovementCreate' %}">INGRESAR DINERO</a>
+</span>
+
+{% endblock %}

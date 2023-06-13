@@ -1,0 +1,63 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Categorias {% endblock %}
+
+{% block 'content' %}
+
+<h1>CATEGORIAS / AHORROS</h1>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+        {% if message.tags %}
+            {% if message.tags == 'success' %}
+                <li class="alert-success">{{ message|safe }}</li>
+            {% elif message.tags == 'error' %}
+                <li class="alert-error">{{ message|safe }}</li>
+            {% else %}
+                <li>{{ message|safe }}</li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</ul>
+{% endif %}
+
+<input class="search-bar" id="myInput" type="text" placeholder="Buscar..">
+
+<br>
+{% include 'categories/partials/by_initial.html' %}
+
+<span class="aux-btns">
+    <a class="btn btn-light" href="{% url 'categoriesIndex' %}">VER TODAS</a>
+    <a class="btn btn-danger" href="{% url 'categoriesCreate' %}">AGREGAR CATEGORIA</a>
+    <a class="btn btn-success" href="{% url 'fundsIndex' %}">SALDO ACTUAL ${{current_funds}}</a>
+</span>
+
+<table class="table table-light" id="custom-table" style="align-items: center; text-align: center">
+    <thead class="table-dark" id="custom-table-head">
+        <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Ahorro acutal</th>
+            <th scope="col">Ingresar dinero ahorro</th>
+            <th scope="col">Extraer dinero ahorro</th>
+        </tr>
+    </thead>
+{% for category in categories %}
+    <tbody id="tbodyFinder">
+        <tr>
+            {% if category.is_payment == True %}
+            <th scope="row">{{category.name}}</th>
+            {% if category.current_funds > 0 %}
+            <th scope="row" style="color: green;">{{category.current_funds}}</th>
+            {% else %}
+            <th scope="row">{{category.current_funds}}</th>
+            {% endif %}
+            <th scope="row"><a href="{% url 'savingsDeposit' id=category.id %}" class="btn btn-outline-success"><i class="fa fa-dollar" style="font-size:24px"></i></button></th>
+            <th scope="row"><a href="{% url 'savingsWithdraw' id=category.id %}" class="btn btn-outline-danger"><i class="fa fa-dollar" style="font-size:24px"></i></button></th>
+            {% endif %}    
+        </tr>
+    </tbody>
+{% endfor %}
+</table>
+
+{% endblock %}

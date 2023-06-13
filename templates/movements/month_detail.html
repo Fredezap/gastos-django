@@ -1,0 +1,106 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Por mes {% endblock %}
+
+{% block 'content' %}
+
+<div class="header-container">
+    <h1 class="inline-header">RESUMEN MES</h1>
+    {% include 'movements/partials/months_header.html'%}
+</div>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+        {% if message.tags %}
+            {% if message.tags == 'success' %}
+                <li class="alert-success">{{ message|safe }}</li>
+            {% elif message.tags == 'error' %}
+                <li class="alert-error">{{ message|safe }}</li>
+            {% else %}
+                <li>{{ message|safe }}</li>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</ul>
+{% endif %}
+
+<table class="table table-light" id="custom-table" style="align-items: center; text-align: center">
+    <thead class="table-dark" id="custom-table-head">
+        <tr>
+            <th scope="col">Categoria</th>
+            <th scope="col">Pagos</th>
+            <th scope="col">%</th>
+            <th scope="col">Depositos ahorro</th>
+            <th scope="col">Extracciones ahorro</th>
+            <th scope="col">Ingresos sueldo</th>
+            <th scope="col">Ahorro actual</th>
+        </tr>
+    </thead>
+{% for data in proccessed_data %}
+    <tbody>
+        <tr>
+            <th scope="row">{{data.0}}</th>
+            {% if data.3 > 0 %}
+            <th scope="row" style="color:red">{{data.3}}</th>
+            {% else %}
+            <th scope="row">{{data.3}}</th>
+            {% endif %}
+            <th scope="row">{{data.6}}</th>
+            {% if data.2 > 0 %}
+            <th scope="row" style="color:red">{{data.2}}</th>
+            {% else %}
+            <th scope="row">{{data.2}}</th>
+            {% endif %}
+            {% if data.1 > 0 %}
+            <th scope="row" style="color:green">{{data.1}}</th>
+            {% else %}
+            <th scope="row">{{data.1}}</th>
+            {% endif %}
+            {% if data.4 > 0 %}
+            <th scope="row" style="color:green">{{data.4}}</th>
+            {% else %}
+            <th scope="row">{{data.4}}</th>
+            {% endif %}
+            {% if data.5 > 0 %}
+            <th scope="row" style="color:green">{{data.5}}</th>
+            {% else %}
+            <th scope="row">{{data.5}}</th>
+            {% endif %}
+        </tr>
+        {% endfor %}
+        <tr id="total">
+            <th scope="col" id="total2"><h2>TOTAL</h2></th>
+            <th scope="col" style="color:red">{{total_payments_month}}</th>
+            <th scope="col" style="color:red"></th>
+            <th scope="col" style="color:red">{{total_savings_deposit_month}}</th>
+            <th scope="col" style="color:green">{{total_savings_withdraw_month}}</th>
+            <th scope="col" style="color:green">{{total_transfer_incomes_month}}</th>
+            <th scope="col" style="color:green">{{total_savings_month}}</th>
+        </tr>
+    </tbody>
+
+</table>
+
+<table class="table table-light" id="custom-table" style="align-items: center; text-align: center">
+    <thead class="table-dark" id="custom-table-head">
+        <tr>
+            <th scope="col" colspan="3">RESUMEN MES</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="bordered-row">
+            <th scope="col" colspan="3" class="total_month">MONTO AL INICIO DE MES $ {{salary_amount_start_month}}</th>
+        </tr>
+        <tr class="bordered-row">
+            <td colspan="2" class="red-cell">TOTAL GASTOS MES $ {{total_spends_month}}</td>
+        </tr>
+        <tr class="bordered-row">
+            <td scope="row" class="green-cell" colspan="1">TOTAL INGRESOS MES $ {{total_incomes_month}}</td>
+        </tr>
+        <tr class="bordered-row">
+        <th scope="col" colspan="3" class="total_month">BALANCE INGRESOS/EGRESOS $ {{total_month}}</th>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}

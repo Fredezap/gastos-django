@@ -1,0 +1,24 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Extraer dinero ahorros {% endblock %}
+
+{% block 'styles' %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block 'content' %}
+    <form action="{% url 'savingsWithdraw' id=category.id %}" method="POST">
+        <h1 class=formTitle>EXTRAER DINERO</h1>
+        <p class=formSubtitle>Cuanto dinero desea extraer de la categoria {{category}}?</p>
+        <p class=formSubtitle>Dinero disponible $ {{category.current_funds}}</p>
+        {% csrf_token %}
+        <table>
+            {{ form.as_table }}
+        </table>
+        <div class="btn-wrapper">
+            <button class="btn-cancel"><a href="{% url 'categoriesIndex' %}">Cancelar</a></button>
+            <input class='btn-send' type="submit" value="Extraer dinero" name="NewPaymentForm">
+        </div>
+    </form>
+{% endblock %}
