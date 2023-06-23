@@ -39,11 +39,9 @@ def movementsIndex(request):
     
 def movementsCreate(request):
     if request.method == "GET":
-        categories = Category.objects.filter(is_payment=True).order_by('name')
         form = MovementsPaymentForm()
         context = {
             'form': form,
-            'categories': categories,
         }
         return render(request, '../templates/movements/create.html', context)
     
@@ -132,14 +130,10 @@ def categoriesCreate(request):
         if form.is_valid():
             new_category = form.save(commit=False)
             categoryName = form.cleaned_data['name'].capitalize()
-            print(categoryName)
-            print(type(categoryName))
             try:
                 check_already_exist = Category.objects.get(name=categoryName)
-                print(check_already_exist)
             except ObjectDoesNotExist:
                 check_already_exist = None
-            print(check_already_exist)
             if check_already_exist == None:
                 new_category.name = categoryName
                 new_category.save()

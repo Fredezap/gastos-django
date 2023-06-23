@@ -32,6 +32,30 @@ select {
     margin: 5px;
 }
 
+/* Modifying some default styles from library select 2 */
+.select2 {
+    outline: none;
+    box-shadow: none;
+    border: 1px solid var(--color-secondary);
+    margin: 5px;
+    height: 40px;
+    width: 100% !important;
+}
+
+.select2-selection{
+    height: 38px !important;
+}
+.select2-selection__rendered{
+    text-align: center;
+}
+
+.select2-container--default .select2-selection--single {
+    background-color: #fff;
+    border: none;
+    border-radius: 0px;
+}
+/* End modifying some default styles from library select 2 */
+
 .btn-send {
     background-color: var(--color-primary);
     color: white;

@@ -3,7 +3,7 @@ from django import forms
 from .models import Movements, Category
 
 class MovementsPaymentForm(ModelForm):
-    category = forms.ModelChoiceField(queryset=Category.objects.filter(is_payment=True), label='Categoria', widget=forms.Select(attrs={'class': 'category-select'}))
+    category = forms.ModelChoiceField(queryset=Category.objects.filter(is_payment=True).order_by('name'), label='Categoria', widget=forms.Select(attrs={'class': 'category-select select2'}))
     class Meta:
         model = Movements
         exclude = ('total_amount', 'salary_funds_before', 'still_exist', 'is_savings_withdraw',

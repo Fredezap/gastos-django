@@ -19,21 +19,12 @@
             <input class='btn-send' type="submit" value="Pagar" name="NewPaymentForm">
         </div>
     </form>
+{% endblock %}
 
-    {% comment %} {% block 'scripts' %}
-    <script type="text/javascript">
-        $(".category-select").change(function () {
-            var selectedOption = $(this).find(":selected");
-            var categoryId = selectedOption.val();
-            var categoryName = selectedOption.text();
-            var categoryData = selectedOption.data();
-
-            console.log("Category ID:", categoryId);
-            console.log("Category Name:", categoryName);
-            console.log("Category Data:", categoryData);
-
-        });
-    </script>
-    {% endblock %} {% endcomment %}
-
+{% block 'scripts' %}
+<script>
+    $(document).ready(function() {
+        $('.category-select').select2();
+    });
+</script>
 {% endblock %}
