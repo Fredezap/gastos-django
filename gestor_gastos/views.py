@@ -427,16 +427,27 @@ def redistributeLeftoverMoney(request, current_funds = None):
         # Getting the quantity of categories that have 0% percentage
         total_payment_categoryes_no_percentage = Category.objects.filter(is_payment=True, percentage=0)
         
-        # Calculating the percentage for each remaining category.
-        remaining_categories_percentage = (total_percentage_left / ((len(total_payment_categoryes_no_percentage))))
-        
-        context = {
-            'payment_categories': payment_categories,
-            'remaining_categories_percentage': remaining_categories_percentage,
-            'current_funds': current_funds,
-        }
-        return render(request, '../templates/categories/redistribute_leftover_money.html', context)
-    
+        # if total percentage fixed is grater than 100% redirect
+        if total_percentage_fixed["total_percentage"] > 100:
+            messages.error(request, "La suma de porcentajes fijos de las categorias ha superado el 100%\n Modifica alguans categorias para llegar a un valor de 100% o menos.")
+            return redirect('categoriesIndex')
+        # checking if percentage fixed is == 100 and there are no more categories to redistribute funds to avoid ZeroDivisionError
+        elif total_percentage_fixed["total_percentage"] <= 100 and not total_payment_categoryes_no_percentage:
+            context = {
+                'payment_categories': payment_categories,
+                'current_funds': current_funds,
+                }
+            return render(request, '../templates/categories/redistribute_leftover_money.html', context)
+        else:
+            # Calculating the percentage for each remaining category.
+            remaining_categories_percentage = (total_percentage_left / ((len(total_payment_categoryes_no_percentage))))
+            context = {
+                'payment_categories': payment_categories,
+                'remaining_categories_percentage': remaining_categories_percentage,
+                'current_funds': current_funds,
+            }
+            return render(request, '../templates/categories/redistribute_leftover_money.html', context)
+
     if request.method == 'POST':
         
         current_funds = float(request.POST.get("current_funds"))

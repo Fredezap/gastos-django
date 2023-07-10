@@ -379,6 +379,25 @@ main {
 
 /* End Search bar settings */
 
+.modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.modal-body ul li {
+font-size: x-large;
+list-style-type: none;
+color: #a88c32;
+margin: 10px;
+}
+
+.modal-body ul li p {
+display: inline;
+text-align: end;
+color: black;
+margin-left: 0;
+}
+
 .modal-body-movements {
     display: grid;
     grid-template-columns: 1fr 1fr;
