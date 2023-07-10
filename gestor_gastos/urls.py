@@ -13,4 +13,6 @@ urlpatterns = [
     path('savingsDeposit/<int:id>', views.savingsDeposit, name='savingsDeposit'),
     path('savingsWithdraw/<int:id>', views.savingsWithdraw, name='savingsWithdraw'),
     path('movementsMonthly/', views.movementsMonthly, name='movementsMonthly'),
+    path('redistributeLeftoverMoney/', views.redistributeLeftoverMoney, name='redistributeLeftoverMoney'),
+    path('redistributeLeftoverMoney/<str:current_funds>', views.redistributeLeftoverMoney, name='redistributeLeftoverMoney'),
 ]

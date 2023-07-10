@@ -210,6 +210,18 @@ main {
     width: 200%;
     padding: 20px 0 20px 0;
     background-color: rgb(192, 18, 18);
+    margin-left: -50px;
+    color: white;
+    border: solid 1px;
+    text-align: center;
+    border-radius: 5px;
+    list-style-type: none;
+}
+
+.alert-warning {
+    width: 200%;
+    padding: 20px 0 20px 0;
+    background-color: rgb(189, 192, 37);
     margin-left: 35px;
     color: white;
     border: solid 1px;
@@ -367,19 +379,19 @@ main {
 
 /* End Search bar settings */
 
-.modal-body {
+.modal-body-movements {
     display: grid;
     grid-template-columns: 1fr 1fr;
 }
 
-.modal-body ul li {
+.modal-body-movements ul li {
 font-size: x-large;
 list-style-type: none;
 color: #a88c32;
 margin: 10px;
 }
 
-.modal-body ul li p {
+.modal-body-movements ul li p {
 display: inline;
 text-align: end;
 color: black;
@@ -408,6 +420,24 @@ margin-left: 0;
     font-size: large;
 }
 
-.modal-title {
+.modal-title-movements {
     margin-left: 70px;
 }
+
+.formLarge {
+    display: flex;
+    flex-wrap: wrap;
+    width: 50%;
+    justify-content: center;
+    align-items: center;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table td p {
+    vertical-align: middle;
+    margin-bottom: 5px;
+}
+

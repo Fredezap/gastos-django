@@ -4,7 +4,11 @@ from .forms import MovementsPaymentForm, CategoryForm, MovementsFundsForm, Savin
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Q, Sum
+from decimal import Decimal
+from django.db import IntegrityError, Error
 
+class InsufficientFundsError(Exception):
+    pass
 
 def index(request):
     return render(request, '../templates/index.html')
@@ -193,7 +197,46 @@ def fundsMovementCreate(request):
         else:
             messages.error(request, "Ocurrio un error")
             return redirect('fundsIndex')
+
+
+def savingDepositLogic(request, id, savings):
+    form = SavingsDepositForm()
+    savings = float(savings)
+    #Get info and do math to update funds
+    category = Category.objects.get(id=id)
+    categoryCurrentFunds = float(category.current_funds)
+    categoryNewFunds = categoryCurrentFunds + savings
+
+    try:
+        last_movement = Movements.objects.latest('id')
+        funds_last_movement = float(last_movement.salary_funds_after)
+    except:
+        funds_last_movement = 0
         
+    current_funds = funds_last_movement - savings
+
+    if savings > funds_last_movement:
+        raise InsufficientFundsError
+
+    #Instance new info to save it
+    new_movement = form.save(commit=False)
+    new_movement.category = category
+    new_movement.amount = 0
+    new_movement.savings = savings
+    new_movement.total_amount = savings
+    new_movement.salary_funds_before = funds_last_movement
+    new_movement.salary_funds_after = current_funds
+    new_movement.savings_funds_before = categoryCurrentFunds
+    new_movement.savings_funds_after = categoryNewFunds
+    new_movement.payment_method = f"Ingreso ahorros a categoria {category}"
+    new_movement.save()
+    
+    #Update category data
+    category.last_funds = categoryCurrentFunds
+    category.current_funds = categoryNewFunds
+    category.save()
+        
+
 def savingsDeposit(request, id):
     category = Category.objects.get(id=id)
     
@@ -209,46 +252,19 @@ def savingsDeposit(request, id):
         form = SavingsDepositForm(request.POST)
         if form.is_valid():
             
-            #Get info and do math to update funds
             savings = form.cleaned_data['savings']
-            categoryCurrentFunds =  category.current_funds
-            categoryNewFunds = categoryCurrentFunds + savings
-            
             try:
-                last_movement = Movements.objects.latest('id')
-                funds_last_movement = last_movement.salary_funds_after
-            except:
-                funds_last_movement = 0
-
-            current_funds = funds_last_movement - savings
-            
-            if savings > funds_last_movement:
+                savingDepositLogic(request, id, savings)
+                messages.success(request, f"Has agregado $ {savings} pesos a la categoria {category}")
+                return redirect('categoriesIndex')
+            except InsufficientFundsError:
                 messages.error(request, "Saldo insuficiente")
                 return redirect('categoriesIndex')
             
-            #Instance new info to save it
-            new_movement = form.save(commit=False)
-            new_movement.category = category
-            new_movement.amount = 0
-            new_movement.savings = savings
-            new_movement.total_amount = savings
-            new_movement.salary_funds_before = funds_last_movement
-            new_movement.salary_funds_after = current_funds
-            new_movement.savings_funds_before = categoryCurrentFunds
-            new_movement.savings_funds_after = categoryNewFunds
-            new_movement.payment_method = f"Ingreso ahorros a categoria {category}"
-            new_movement.save()
-            
-            #Update category data
-            category.last_funds = categoryCurrentFunds
-            category.current_funds = categoryNewFunds
-            category.save()
-                        
-            messages.success(request, f"Has agregado $ {savings} pesos a la categoria {category}")
-            return redirect('categoriesIndex')
         else:
             messages.error(request, "Ocurrio un error")
             return redirect('categoriesIndex')
+
 
 def savingsWithdraw(request, id):
     category = Category.objects.get(id=id)
@@ -388,3 +404,113 @@ def movementsMonthly(request):
         'total_savings_month': total_savings_month,
     }
     return render(request, '../templates/movements/month_detail.html', context)
+
+
+# Method client ask me to redistribute all the left money she has at the end of the month
+def redistributeLeftoverMoney(request, current_funds = None):
+    payment_categories = Category.objects.filter(is_payment=True).order_by('-percentage')
+    if request.method == 'GET':
+
+        current_funds = float(current_funds)
+        if current_funds < 100:
+            messages.error(request, "Tienes muy poco saldo para hacer esta operacion. Tu saldo debe ser mayor a $100")
+            return redirect ('categoriesIndex')
+        
+        # 100% of the current funds are going to be redistribute 
+        # There are some categories that have some percentage fixed.
+        # Will sum all the fixed percentage to see how much have left to get 100% and redistribute in the remaining categories
+        total_percentage_fixed = Category.objects.filter(is_payment=True, percentage__gt=0).aggregate(total_percentage=Sum('percentage'))
+        
+        # will get the remaining percentage to be divided into the remaining categories.
+        total_percentage_left = - total_percentage_fixed["total_percentage"] + 100
+
+        # Getting the quantity of categories that have 0% percentage
+        total_payment_categoryes_no_percentage = Category.objects.filter(is_payment=True, percentage=0)
+        
+        # Calculating the percentage for each remaining category.
+        remaining_categories_percentage = (total_percentage_left / ((len(total_payment_categoryes_no_percentage))))
+        
+        context = {
+            'payment_categories': payment_categories,
+            'remaining_categories_percentage': remaining_categories_percentage,
+            'current_funds': current_funds,
+        }
+        return render(request, '../templates/categories/redistribute_leftover_money.html', context)
+    
+    if request.method == 'POST':
+        
+        current_funds = float(request.POST.get("current_funds"))
+        
+        # Getting the items and it's values from HTML form
+        amount_and_id_data = []
+
+        for key in request.POST.keys():
+            if key == "amount_and_category_id":
+                formData = request.POST.getlist(key)
+
+                for item in formData:
+                    data = item.split("_")
+                    lista = list(data)
+                    amount_and_id_data.append(lista)
+        
+        # Creating new list with correct data values
+        amount_and_id_data_float = [[float(value[0]), int(value[1])] for value in amount_and_id_data]
+        
+        if len(amount_and_id_data_float) == len(payment_categories):
+        # Controlling if exist or not a diference betwhen current_funds and total selected by user
+        # To substract it to any category (shoud be no grater then $0.02)
+            total = 0
+            for data in amount_and_id_data_float:
+                total += data[0]
+            
+            for data in amount_and_id_data_float:
+                category_substracted_name = Category.objects.get(id=data[1])
+                break
+            
+            total = round(total, 2)
+            verification = round(total - current_funds, 2)
+            if verification > 0:
+                for data in amount_and_id_data_float:
+                    data[0] -=verification
+                    break
+            elif verification < 0:
+                for data in amount_and_id_data_float:
+                    data[0] += (-verification)
+                    break
+            amount_and_id_data_float_rounded = [[round(value[0], 2), int(value[1])] for value in amount_and_id_data_float]
+            # Calling method to create 1 movement for each id and put amounts into saving of each category and substract the amount from current_funds
+            for amount, id in amount_and_id_data_float_rounded:
+                try:
+                    savingDepositLogic(request, id, amount)
+                except InsufficientFundsError:
+                    messages.error(request, "Saldo insuficiente")
+                    return redirect('categoriesIndex')
+                            
+            if verification == 0:
+                messages.success(request, f"Depositos realizados correctamente\nNo hubieron sobrantes")
+                return redirect('categoriesIndex')
+            elif verification < 0:
+                messages.success(request, f"Depositos realizados correctamente\nSe sumaron $ {verification} a la categoria {category_substracted_name.name} que era un sobrante de redondeo")
+                return redirect('categoriesIndex')
+            else:
+                messages.success(request, f"Depositos realizados correctamente\nSe restaron $ {verification} a la categoria {category_substracted_name.name} que era un sobrante de redondeo")
+                return redirect('categoriesIndex')
+        
+        # verifying if all the categories has been selected or not for future Flow control
+        elif len(amount_and_id_data_float) < len(payment_categories):
+            amount_and_id_data_float_rounded = [[round(value[0], 2), int(value[1])] for value in amount_and_id_data_float]
+
+            for amount, id in amount_and_id_data_float_rounded:
+                try:
+                    savingDepositLogic(request, id, amount)
+                except InsufficientFundsError:
+                    messages.error(request, "Saldo insuficiente")
+                    return redirect('categoriesIndex')
+            messages.success(request, f"Depositos realizados correctamente\nHa sobrado dinero ya que no seleccionaste todas las categorias")
+            return redirect('categoriesIndex')
+        
+        else:
+            messages.error(request, "Se han seleccionado mas categorias de las existentes")
+            return redirect('categoriesIndex')
+            
+    return render(request, '../templates/categories/redistribute_leftover_money.html')

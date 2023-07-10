@@ -1,0 +1,86 @@
+{% extends 'layout/base.html' %}
+
+{% block 'title' %} Resultado reedistribucion {% endblock %}
+
+{% block 'content' %}
+<h3 style="margin-top: 40px">DEFINE EL PORCENTAJE DE CADA CATEGORIA</h3>
+    <form class="formLarge" style="margin-top: 40px" method="POST" action="{% url 'redistributeLeftoverMoney' %}">
+        {% csrf_token %}
+        <table class="table table-responsive-lg table-dark" style="align-items: center; text-align: center">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Categoria</th>
+                    <th></th>
+                    <th>Porcentaje</th>
+                    <th>Total categoria</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in payment_categories %}
+                <tr>
+                    <td><input type="checkbox" name="amount_and_category_id" id="amount_and_category_id_{{ category.id }}" checked></td>
+                    <td><p>{{category.name}}</p></td>
+                    <td><p>%</p></td>
+                    <td>
+                        {% if category.percentage > 0 %}
+                            <input id="percentage_{{ category.id }}" type="text" value="{{category.percentage}}">
+                        {% else %}
+                            <input id="percentage_{{ category.id }}" type="text" value="{{remaining_categories_percentage}}">
+                        {% endif %}
+                    </td>
+                    <td><p class="green-cell" id="total_category_redistribute{{ category.id }}"></p></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <input type="hidden" name="current_funds" value={{current_funds}}>
+        <br>
+        <div style="margin: 20px 0 30px 0">
+            <a href="{% url 'categoriesIndex' %}" class="btn btn-secondary">Volver atras</a>
+            <button id="submitBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Aceptar</button>
+        </div>
+    </form>
+
+{% include 'categories/partials/modalConfirmation.html' %}
+
+{% block 'scripts' %}
+<script>
+    var percentages = document.querySelectorAll("[id^='percentage_']");
+    var currentFunds = {{ current_funds }};
+
+    for (var i = 0; i < percentages.length; i++) {
+        var percentageInput = percentages[i];
+        var categoryId = percentageInput.getAttribute("id").split("_")[1];
+        var totalElement = document.getElementById("total_category_redistribute" + categoryId);
+        var totalElement2 = document.getElementById("amount_and_category_id_" + categoryId);
+        var percentage = parseFloat(percentageInput.value);
+        var total = (percentage * currentFunds) / 100;
+        totalElement.textContent = "$ " + total.toFixed(2);
+        var formData = total.toFixed(2) + "_" + categoryId;
+        totalElement2.value = formData;
+    }
+
+    // Script for avoid sending form without confirmation in modal
+    document.addEventListener("DOMContentLoaded", function() {
+    var form = document.querySelector("form");
+    var submitBtn = document.getElementById("submitBtn");
+    var cancelBtn = document.querySelector("#cancelBtn");
+    var modal = new bootstrap.Modal(document.getElementById("exampleModal"));
+
+    cancelBtn.addEventListener("click", function() {
+    modal.hide();
+    console.log("aca")
+    });
+
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+        modal.show();
+        ModalSubmitBotton.addEventListener("click", function() {
+        form.submit();
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
