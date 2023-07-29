@@ -31,34 +31,28 @@
             <th scope="col">Categoria</th>
             <th scope="col">Pagos</th>
             <th scope="col">%</th>
+            <th scope="col">Ingresos sueldo</th>
             <th scope="col">Depositos ahorro</th>
             <th scope="col">Extracciones ahorro</th>
-            <th scope="col">Ingresos sueldo</th>
-            <th scope="col">Ahorro actual</th>
         </tr>
     </thead>
 {% for data in proccessed_data %}
     <tbody>
         <tr>
             <th scope="row">{{data.0}}</th>
-            {% if data.3 > 0 %}
-            <th scope="row" style="color:red">{{data.3}}</th>
-            {% else %}
-            <th scope="row">{{data.3}}</th>
-            {% endif %}
-            <th scope="row">{{data.6}}</th>
-            {% if data.2 > 0 %}
-            <th scope="row" style="color:red">{{data.2}}</th>
-            {% else %}
-            <th scope="row">{{data.2}}</th>
-            {% endif %}
             {% if data.1 > 0 %}
-            <th scope="row" style="color:green">{{data.1}}</th>
+            <th scope="row" style="color:red">{{data.1}}</th>
             {% else %}
             <th scope="row">{{data.1}}</th>
             {% endif %}
+            <th scope="row">{{data.2}}</th>
+            {% if data.3 > 0 %}
+            <th scope="row" style="color:green">{{data.3}}</th>
+            {% else %}
+            <th scope="row">{{data.3}}</th>
+            {% endif %}
             {% if data.4 > 0 %}
-            <th scope="row" style="color:green">{{data.4}}</th>
+            <th scope="row" style="color:red">{{data.4}}</th>
             {% else %}
             <th scope="row">{{data.4}}</th>
             {% endif %}
@@ -73,10 +67,9 @@
             <th scope="col" id="total2"><h2>TOTAL</h2></th>
             <th scope="col" style="color:red">{{total_payments_month}}</th>
             <th scope="col" style="color:red"></th>
+            <th scope="col" style="color:green">{{total_transfer_incomes_month}}</th>
             <th scope="col" style="color:red">{{total_savings_deposit_month}}</th>
             <th scope="col" style="color:green">{{total_savings_withdraw_month}}</th>
-            <th scope="col" style="color:green">{{total_transfer_incomes_month}}</th>
-            <th scope="col" style="color:green">{{total_savings_month}}</th>
         </tr>
     </tbody>
 

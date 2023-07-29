@@ -10,6 +10,9 @@ from django.db import IntegrityError, Error
 class InsufficientFundsError(Exception):
     pass
 
+class MovementNotCreated(Exception):
+    pass
+
 def index(request):
     return render(request, '../templates/index.html')
 
@@ -85,23 +88,26 @@ def movementsCreate(request):
                 category.current_funds = categoryNewFunds
                 category.save()
             
+            try:
+                #Instance new info to save it
+                new_movement = form.save(commit=False)
+                new_movement.category = category
+                new_movement.amount = amount
+                new_movement.savings = savings
+                new_movement.total_amount = total_amount
+                new_movement.salary_funds_before = current_funds_last_movement
+                new_movement.salary_funds_after = new_current_funds
+                new_movement.savings_funds_before = categoryCurrentFunds
+                new_movement.savings_funds_after = categoryNewFunds
+                new_movement.save()
+                messages.success(request, f"Has agregado un pago en concepto de {category}")
+                return redirect('movementsIndex')
+            except:
+                messages.error(request, "Ocurrio un error al realizar el pago")
+                return redirect('movementsIndex')
 
-            #Instance new info to save it
-            new_movement = form.save(commit=False)
-            new_movement.category = category
-            new_movement.amount = amount
-            new_movement.savings = savings
-            new_movement.total_amount = total_amount
-            new_movement.salary_funds_before = current_funds_last_movement
-            new_movement.salary_funds_after = new_current_funds
-            new_movement.savings_funds_before = categoryCurrentFunds
-            new_movement.savings_funds_after = categoryNewFunds
-            new_movement.save()
-
-            messages.success(request, f"Has agregado un pago en concepto de {category}")
-            return redirect('movementsIndex')
         else:
-            messages.error(request, "Ocurrio un error")
+            messages.error(request, "Ocurrio un error relacionado al formulario")
             return redirect('movementsIndex')
 
 def categoriesIndex(request, letter = None):
@@ -185,21 +191,26 @@ def fundsMovementCreate(request):
 
             current_funds = funds_last_movement + amount
             
-            new_movement.amount = amount
-            new_movement.total_amount = amount
-            new_movement.salary_funds_before = funds_last_movement
-            new_movement.salary_funds_after = current_funds
-            new_movement.avings_funds_before = categoryCurrentFunds
-            new_movement.savings_funds_after = categoryCurrentFunds
-            new_movement.save()
-            messages.success(request, f"Has agregado $ {amount} pesos")
-            return redirect('fundsIndex')
+            try:
+                new_movement.amount = amount
+                new_movement.total_amount = amount
+                new_movement.salary_funds_before = funds_last_movement
+                new_movement.salary_funds_after = current_funds
+                new_movement.avings_funds_before = categoryCurrentFunds
+                new_movement.savings_funds_after = categoryCurrentFunds
+                new_movement.save()
+                messages.success(request, f"Has agregado $ {amount} pesos")
+                return redirect('fundsIndex')
+            except:
+                messages.error(request, "Ocurrio un error al ingresar dinero")
+                return redirect('fundsIndex')
+
         else:
-            messages.error(request, "Ocurrio un error")
+            messages.error(request, "Ocurrio un error relacionado al formulario")
             return redirect('fundsIndex')
 
 
-def savingDepositLogic(request, id, savings):
+def savingDepositLogic(request, id, savings, detail):
     form = SavingsDepositForm()
     savings = float(savings)
     #Get info and do math to update funds
@@ -218,24 +229,27 @@ def savingDepositLogic(request, id, savings):
     if savings > funds_last_movement:
         raise InsufficientFundsError
 
-    #Instance new info to save it
-    new_movement = form.save(commit=False)
-    new_movement.category = category
-    new_movement.amount = 0
-    new_movement.savings = savings
-    new_movement.total_amount = savings
-    new_movement.salary_funds_before = funds_last_movement
-    new_movement.salary_funds_after = current_funds
-    new_movement.savings_funds_before = categoryCurrentFunds
-    new_movement.savings_funds_after = categoryNewFunds
-    new_movement.payment_method = f"Ingreso ahorros a categoria {category}"
-    new_movement.save()
-    
-    #Update category data
-    category.last_funds = categoryCurrentFunds
-    category.current_funds = categoryNewFunds
-    category.save()
-        
+    try:
+        #Instance new info to save it
+        new_movement = form.save(commit=False)
+        new_movement.category = category
+        new_movement.amount = 0
+        new_movement.savings = savings
+        new_movement.total_amount = savings
+        new_movement.salary_funds_before = funds_last_movement
+        new_movement.salary_funds_after = current_funds
+        new_movement.savings_funds_before = categoryCurrentFunds
+        new_movement.savings_funds_after = categoryNewFunds
+        new_movement.payment_method = f"Ingreso ahorros a categoria {category}"
+        new_movement.detail = detail
+        new_movement.save()
+        #Update category data
+        category.last_funds = categoryCurrentFunds
+        category.current_funds = categoryNewFunds
+        category.save()
+    except:
+        raise MovementNotCreated
+
 
 def savingsDeposit(request, id):
     category = Category.objects.get(id=id)
@@ -253,16 +267,20 @@ def savingsDeposit(request, id):
         if form.is_valid():
             
             savings = form.cleaned_data['savings']
+            detail = form.cleaned_data['detail']
             try:
-                savingDepositLogic(request, id, savings)
+                savingDepositLogic(request, id, savings, detail)
                 messages.success(request, f"Has agregado $ {savings} pesos a la categoria {category}")
                 return redirect('categoriesIndex')
-            except InsufficientFundsError:
-                messages.error(request, "Saldo insuficiente")
-                return redirect('categoriesIndex')
-            
+            except InsufficientFundsError or MovementNotCreated:
+                if InsufficientFundsError:
+                    messages.error(request, "Saldo insuficiente")
+                    return redirect('categoriesIndex')
+                if MovementNotCreated:
+                    messages.error(request, "Ocurrio un error al ingresar dinero")
+                    return redirect('categoriesIndex')
         else:
-            messages.error(request, "Ocurrio un error")
+            messages.error(request, "Ocurrio un error relacionado al formulario")
             return redirect('categoriesIndex')
 
 
@@ -298,30 +316,36 @@ def savingsWithdraw(request, id):
                 messages.error(request, "Saldo insuficiente")
                 return redirect('categoriesIndex')
             
-            #Instance new info to save it
-            new_movement = form.save(commit=False)
-            new_movement.category = category
-            new_movement.amount = amount
-            new_movement.savings = 0
-            new_movement.total_amount = amount
-            new_movement.salary_funds_before = funds_last_movement
-            new_movement.salary_funds_after = current_funds
-            new_movement.savings_funds_before = categoryCurrentFunds
-            new_movement.savings_funds_after = categoryNewFunds
-            new_movement.payment_method = f"Extraccion ahorros de la categoria {category}"
-            new_movement.is_savings_withdraw = True
-            new_movement.save()
+            try:
+                #Instance new info to save it
+                new_movement = form.save(commit=False)
+                new_movement.category = category
+                new_movement.amount = amount
+                new_movement.savings = 0
+                new_movement.total_amount = amount
+                new_movement.salary_funds_before = funds_last_movement
+                new_movement.salary_funds_after = current_funds
+                new_movement.savings_funds_before = categoryCurrentFunds
+                new_movement.savings_funds_after = categoryNewFunds
+                new_movement.payment_method = f"Extraccion ahorros de la categoria {category}"
+                new_movement.is_savings_withdraw = True
+                new_movement.save()
             
-            #Update category data
-            category.last_funds = categoryCurrentFunds
-            category.current_funds = categoryNewFunds
-            category.save()
+                #Update category data
+                category.last_funds = categoryCurrentFunds
+                category.current_funds = categoryNewFunds
+                category.save()
                         
-            messages.success(request, f"Has extraido $ {amount} pesos de la categoria {category}")
-            return redirect('categoriesIndex')
+                messages.success(request, f"Has extraido $ {amount} pesos de la categoria {category}")
+                return redirect('categoriesIndex')
+
+            except:
+                messages.error(request, "Ocurrio un error al ingresar dinero")
+                return redirect('categoriesIndex')
         else:
-            messages.error(request, "Ocurrio un error")
+            messages.error(request, "Ocurrio un error relacionado al formulario")
             return redirect('categoriesIndex')
+        
 
 def movementsMonthly(request):
     if request.method == "GET":
@@ -363,10 +387,8 @@ def movementsMonthly(request):
             
             total_savings_deposit_category = total_savings_deposit_category1 + total_savings_deposit_category2
             
-            total_savings_category = category.current_funds
-            total_savings_month += total_savings_category
-            
-            category_total_details.append((category, total_savings_withdraw_category, total_savings_deposit_category, total_payments_category, total_transfer_incomes_category, total_savings_category))
+            category_total_details.append((category, total_payments_category, total_transfer_incomes_category, 
+                                        total_savings_deposit_category, total_savings_withdraw_category))
         
         total_savings_withdraw_month = 0
         total_savings_deposit_month = 0
@@ -374,19 +396,22 @@ def movementsMonthly(request):
         total_transfer_incomes_month = 0
         
         for data in category_total_details:
-            total_savings_withdraw_month += data[1]
-            total_savings_deposit_month += data[2]
-            total_payments_month += data[3]
-            total_transfer_incomes_month += data[4]
+            total_payments_month += data[1]
+            total_transfer_incomes_month += data[2]
+            total_savings_deposit_month += data[3]
+            total_savings_withdraw_month += data[4]
         
         total_spends_month = total_savings_deposit_month + total_payments_month
         total_incomes_month = total_transfer_incomes_month + total_savings_withdraw_month
         total_month = total_incomes_month - total_spends_month
-        category_total_details.sort(key=lambda x: x[3],reverse=True)
+        category_total_details.sort(key=lambda x: x[1],reverse=True)
 
-    total_payments_category_percentaje = ["{:.2f}".format((x[3] / total_payments_month) * 100) for x in category_total_details]
+    if total_payments_month != 0:
+        total_payments_category_percentaje = ["{:.2f}".format((x[1] / total_payments_month) * 100) for x in category_total_details]
+    else:
+        total_payments_category_percentaje = [(0) for x in category_total_details]
     fusion = list(zip(category_total_details, total_payments_category_percentaje))
-    proccessed_data = [(tuple[0], tuple[1], tuple[2], tuple[3], tuple[4], tuple[5], data) for tuple, data in fusion]
+    proccessed_data = [(tuple[0], tuple[1], data, tuple[2], tuple[3], tuple[4]) for tuple, data in fusion]
     
     context = {
         'proccessed_data': proccessed_data,
@@ -401,7 +426,6 @@ def movementsMonthly(request):
         'total_month': total_month,
         'month': month,
         'salary_amount_start_month': salary_amount_start_month,
-        'total_savings_month': total_savings_month,
     }
     return render(request, '../templates/movements/month_detail.html', context)
 
@@ -458,41 +482,38 @@ def redistributeLeftoverMoney(request, current_funds = None):
         for key in request.POST.keys():
             if key == "amount_and_category_id":
                 formData = request.POST.getlist(key)
-
-                for item in formData:
+                
+                for item in formData: # Itering and creating new list with correct data values
                     data = item.split("_")
-                    lista = list(data)
-                    amount_and_id_data.append(lista)
+                    listData = float(data[0]), int(data[1])
+                    amount_and_id_data.append(listData)
         
-        # Creating new list with correct data values
-        amount_and_id_data_float = [[float(value[0]), int(value[1])] for value in amount_and_id_data]
-        
-        if len(amount_and_id_data_float) == len(payment_categories):
-        # Controlling if exist or not a diference betwhen current_funds and total selected by user
-        # To substract it to any category (shoud be no grater then $0.02)
+        if len(amount_and_id_data) == len(payment_categories): #Checking if user selected all categories
+
             total = 0
-            for data in amount_and_id_data_float:
+            for data in amount_and_id_data:
                 total += data[0]
             
-            for data in amount_and_id_data_float:
-                category_substracted_name = Category.objects.get(id=data[1])
+            for data in amount_and_id_data:
+                category = Category.objects.get(id=data[1])
                 break
             
             total = round(total, 2)
             verification = round(total - current_funds, 2)
             if verification > 0:
-                for data in amount_and_id_data_float:
+                for data in amount_and_id_data:
                     data[0] -=verification
                     break
             elif verification < 0:
-                for data in amount_and_id_data_float:
+                for data in amount_and_id_data:
                     data[0] += (-verification)
                     break
-            amount_and_id_data_float_rounded = [[round(value[0], 2), int(value[1])] for value in amount_and_id_data_float]
+            amount_and_id_data_rounded = [[round(value[0], 2), int(value[1])] for value in amount_and_id_data]
             # Calling method to create 1 movement for each id and put amounts into saving of each category and substract the amount from current_funds
-            for amount, id in amount_and_id_data_float_rounded:
+            for amount, id in amount_and_id_data_rounded:
+                detail = "ingreso atraves de distribucion automatica de fin de mes"
                 try:
-                    savingDepositLogic(request, id, amount)
+                    savingDepositLogic(request, id, amount, detail)
                 except InsufficientFundsError:
                     messages.error(request, "Saldo insuficiente")
                     return redirect('categoriesIndex')
@@ -501,22 +522,26 @@ def redistributeLeftoverMoney(request, current_funds = None):
                 messages.success(request, f"Depositos realizados correctamente\nNo hubieron sobrantes")
                 return redirect('categoriesIndex')
             elif verification < 0:
-                messages.success(request, f"Depositos realizados correctamente\nSe sumaron $ {verification} a la categoria {category_substracted_name.name} que era un sobrante de redondeo")
+                messages.success(request, f"Depositos realizados correctamente\nSe sumaron $ {verification} a la categoria {category.name} que era un sobrante de redondeo")
                 return redirect('categoriesIndex')
             else:
-                messages.success(request, f"Depositos realizados correctamente\nSe restaron $ {verification} a la categoria {category_substracted_name.name} que era un sobrante de redondeo")
+                messages.success(request, f"Depositos realizados correctamente\nSe restaron $ {verification} a la categoria {category.name} que era un sobrante de redondeo")
                 return redirect('categoriesIndex')
         
         # verifying if all the categories has been selected or not for future Flow control
-        elif len(amount_and_id_data_float) < len(payment_categories):
-            amount_and_id_data_float_rounded = [[round(value[0], 2), int(value[1])] for value in amount_and_id_data_float]
+        elif len(amount_and_id_data) < len(payment_categories):
+            amount_and_id_data_rounded = [[round(value[0], 2), int(value[1])] for value in amount_and_id_data_rounded]
 
-            for amount, id in amount_and_id_data_float_rounded:
+            for amount, id in amount_and_id_data_rounded:
                 try:
                     savingDepositLogic(request, id, amount)
-                except InsufficientFundsError:
-                    messages.error(request, "Saldo insuficiente")
-                    return redirect('categoriesIndex')
+                except InsufficientFundsError or MovementNotCreated:
+                    if InsufficientFundsError:
+                        messages.error(request, "Saldo insuficiente")
+                        return redirect('categoriesIndex')
+                    if MovementNotCreated:
+                        messages.error(request, "Ocurrio un error al generar el movimiento")
+                        return redirect('categoriesIndex')
             messages.success(request, f"Depositos realizados correctamente\nHa sobrado dinero ya que no seleccionaste todas las categorias")
             return redirect('categoriesIndex')
         

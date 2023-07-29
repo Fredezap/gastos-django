@@ -32,12 +32,7 @@
 <input class="search-bar" id="myInput" type="text" placeholder="Buscar..">
 {% if is_get == True %}
 <span class="aux-btns">
-<form style="margin-top:5px" method="GET" action="{% url 'movementsIndex' %}">
-    {% csrf_token %}
-    <input type="hidden" name="year" value={{year}}>
-    <input type="hidden" name="month" value={{month}}>
-    <input class="btn btn-light" type="submit" value="VER TODOS">
-</form>
+    <a class="btn btn-light" href="{% url 'movementsIndex' %}">VER TODOS</a>
     <a class="btn btn-danger" href="{% url 'movementsCreate' %}">AGREGAR PAGO</a>
     <a class="btn btn-success" href="{% url 'fundsIndex' %}">SALDO ACTUAL ${{current_funds}}</a>
     <a class="btn btn-info" href="{% url 'movementsMonthly' %}">VER POR MES</a>
@@ -49,12 +44,6 @@
         <input type="hidden" name="year" value={{year}}>
         <input type="hidden" name="month" value={{month}}>
         <input class="btn btn-light" type="submit" value="VER TODOS">
-    </form>
-    <form style="margin-top:5px" method="POST" action="{% url 'movementsMonthly' %}">
-        {% csrf_token %}
-        <input type="hidden" name="year" value={{year}}>
-        <input type="hidden" name="month" value={{month}}>
-        <input class="btn btn-success" type="submit" value="DETALLES MES">
     </form>
         <a class="btn btn-danger" href="{% url 'movementsCreate' %}">AGREGAR PAGO</a>
         <a class="btn btn-success" href="{% url 'fundsIndex' %}">SALDO ACTUAL ${{current_funds}}</a>

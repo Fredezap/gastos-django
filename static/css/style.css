@@ -154,7 +154,7 @@ main {
 .btn-search {
     background-color: var(--color-primary);
     color: white;
-    width: 19%;
+    width: 49%;
     height: 35px;
     cursor: pointer;
     padding: 5px;

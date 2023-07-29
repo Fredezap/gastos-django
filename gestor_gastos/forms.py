@@ -30,7 +30,7 @@ class MovementsFundsForm(ModelForm):
 class SavingsDepositForm(ModelForm):
     class Meta:
         model = Movements
-        fields = ('savings', 'detail',)
+        fields = ('savings', 'detail')
         labels = {
             'savings': 'Monto',
             'detail': 'Detalle',
@@ -39,7 +39,7 @@ class SavingsDepositForm(ModelForm):
 class SavingsWithdrawForm(ModelForm):
     class Meta:
         model = Movements
-        fields = ('amount', 'detail',)
+        fields = ('amount', 'detail')
         labels = {
             'amount': 'Monto',
             'detail': 'Detalle',
